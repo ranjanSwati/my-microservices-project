@@ -8,7 +8,7 @@ pipeline {
         }
         stage('Build Product Service') {
             steps {
-                dir('product-service') {
+                dir('products') {
                     sh 'chmod +x mvnw'
                     sh './mvnw clean package -DskipTests'
                 }
