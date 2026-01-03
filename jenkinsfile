@@ -24,7 +24,7 @@ pipeline {
                     sh "docker build -t ${DOCKER_HUB_USERNAME}/products:latest ."
                     // Docker Hub par Login aur Upload
                     sh "echo $DOCKER_HUB_CREDS_PSW | docker login -u $DOCKER_HUB_CREDS_USR --password-stdin"
-                    sh "docker push ${DOCKER_HUB_USERNAME}/product-service:latest"
+                    sh "docker push ${DOCKER_HUB_USERNAME}/products:latest"
                 }
             }
         }
@@ -37,7 +37,7 @@ pipeline {
                     sh './mvnw clean package -DskipTests'
                     sh "docker build -t ${DOCKER_HUB_USERNAME}/orders:latest ."
                     sh "echo $DOCKER_HUB_CREDS_PSW | docker login -u $DOCKER_HUB_CREDS_USR --password-stdin"
-                    sh "docker push ${DOCKER_HUB_USERNAME}/order-service:latest"
+                    sh "docker push ${DOCKER_HUB_USERNAME}/orders:latest"
                 }
             }
         }
