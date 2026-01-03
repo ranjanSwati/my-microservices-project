@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # 1. Zipkin (Tracing Server)
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+
+  # 2. Config Server (Central Bank)
+  config-server:
+    build: ./config-server  # Folder ka naam check karein!
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    depends_on:
+      - zipkin
+    environment:
+      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+
+  # 3. Service Discovery (Eureka)
+  servicediscovery:
+    build: ./servicediscovery # Folder ka naam check karein!
+    container_name: servicediscovery
+    ports:
+      - "8761:8761"
+    depends_on:
+      - config-server
+    environment:
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+
+  # 4. Product Service
+  products:
+    build: ./products # Folder ka naam check karein!
+    container_name: products
+    ports:
+      - "8081:8081"
+    depends_on:
+      - servicediscovery
+      - config-server
+    environment:
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://servicediscovery:8761/eureka/
+      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:productdb
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.h2.Driver
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.H2Dialect
+
+      # Agar DB laptop par hai (Mac), toh host.docker.internal use karein
+      # - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/product_db
+
+  # 5. Order Service
+  orders:
+    build: ./orders # Folder ka naam check karein!
+    container_name: orders
+    ports:
+      - "8082:8082"
+    depends_on:
+      - servicediscovery
+      - config-server
+    environment:
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://servicediscovery:8761/eureka/
+      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:orderdb
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.h2.Driver
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.H2Dialect
+      # Agar DB laptop par hai
+      # - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/order_db
+
+  # 6. API Gateway
+  api-gateway:
+    build: ./api-gateway # Folder ka naam check karein!
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - servicediscovery
+      - config-server
+    environment:
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://servicediscovery:8761/eureka/
+      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans

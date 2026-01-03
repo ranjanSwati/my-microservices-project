@@ -1,0 +1,68 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: apigateway
+  cloud:
+    gateway:
+      routes:
+        # Route 1: Product Service
+        - id: products
+          uri: lb://PRODUCTS
+          predicates:
+            - Path=/products/**
+          filters: # <--- Ye 'predicates' ke 'p' ke neeche start hona chahiye
+            - name: CircuitBreaker
+              args:
+                name: productBreaker
+                fallbackUri: forward:/fallback/product
+
+        - id: orders
+          uri: lb://ORDERS
+          predicates:
+            - Path=/orders/**
+          filters: # <--- Ye 'predicates' ke 'p' ke neeche start hona chahiye
+            - name: CircuitBreaker
+              args:
+                name: orderBreaker
+                fallbackUri: forward:/fallback/order
+
+
+#         # --- Route 2: Order Service (With Circuit Breaker) ---
+#        - id: order-service
+#          uri: lb://ORDER-SERVICE
+#          predicates:
+#            - Path=/orders/**
+#          filters:
+#            name: CircuitBreaker # <--- Filter ka naam
+#            args:
+#              name: orderBreaker # Circuit ka naam
+#              fallbackUri: forward:/fallback/order # <--- Error aane par yahan bhejo
+
+
+
+# Eureka Configuration
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+# Debugging Logs (Agar error aaye to console mein dikhega)
+logging:
+  level:
+    org.springframework.cloud.gateway: TRACE
+    org.springframework.http.server.reactive: DEBUG
+    org.springframework.web.reactive: DEBUG
+    reactor.netty: DEBUG
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+
+
+
