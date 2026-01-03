@@ -1,14 +1,61 @@
 pipeline {
     agent any
+    
+    tools {
+        // Maven hum wrapper (mvnw) se use kar rahe hain, isliye yahan kuch nahi chahiye
+    }
+
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/ranjanSwati/my-microservices-project.git'
             }
         }
-        stage('Build Product Service') {
+
+        // 1. Config Server (Sabse pehle kyunki ye independent hai)
+        stage('Build Config Server') {
             steps {
-                dir('products') {
+                dir('config-server') {
+                    sh 'chmod +x mvnw'
+                    sh './mvnw clean package -DskipTests'
+                }
+            }
+        }
+
+        // 2. Discovery Server
+        stage('Build Discovery Server') {
+            steps {
+                dir('servicediscovery') {
+                    sh 'chmod +x mvnw'
+                    sh './mvnw clean package -DskipTests'
+                }
+            }
+        }
+
+        // 3. API Gateway
+        stage('Build API Gateway') {
+            steps {
+                dir('api-gateway') {
+                    sh 'chmod +x mvnw'
+                    sh './mvnw clean package -DskipTests'
+                }
+            }
+        }
+
+        // 4. Product Service
+        stage('Build Products') {
+            steps {
+                dir('product-service') {
+                    sh 'chmod +x mvnw'
+                    sh './mvnw clean package -DskipTests'
+                }
+            }
+        }
+
+        // 5. Order Service
+        stage('Build Orders') {
+            steps {
+                dir('order-service') {
                     sh 'chmod +x mvnw'
                     sh './mvnw clean package -DskipTests'
                 }
