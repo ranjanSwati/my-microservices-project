@@ -1,5 +1,12 @@
 pipeline {
     agent any
+
+    environment {
+        // 👇 YAHAN apna naya Docker Hub username likh dein
+        DOCKER_HUB_USERNAME = 'swatiranjan'  
+        DOCKER_HUB_CREDS = credentials('docker-hub-credentials')
+    }
+
     
     stages {
         stage('Checkout Code') {
