@@ -1,10 +1,6 @@
 pipeline {
     agent any
     
-    tools {
-        // Maven hum wrapper (mvnw) se use kar rahe hain, isliye yahan kuch nahi chahiye
-    }
-
     stages {
         stage('Checkout Code') {
             steps {
@@ -12,7 +8,6 @@ pipeline {
             }
         }
 
-        // 1. Config Server (Sabse pehle kyunki ye independent hai)
         stage('Build Config Server') {
             steps {
                 dir('config-server') {
@@ -22,7 +17,6 @@ pipeline {
             }
         }
 
-        // 2. Discovery Server
         stage('Build Discovery Server') {
             steps {
                 dir('servicediscovery') {
@@ -32,7 +26,6 @@ pipeline {
             }
         }
 
-        // 3. API Gateway
         stage('Build API Gateway') {
             steps {
                 dir('api-gateway') {
@@ -42,20 +35,18 @@ pipeline {
             }
         }
 
-        // 4. Product Service
-        stage('Build Products') {
+        stage('Build Product Service') {
             steps {
-                dir('product-service') {
+                dir('products') {
                     sh 'chmod +x mvnw'
                     sh './mvnw clean package -DskipTests'
                 }
             }
         }
 
-        // 5. Order Service
-        stage('Build Orders') {
+        stage('Build Order Service') {
             steps {
-                dir('order-service') {
+                dir('orders') {
                     sh 'chmod +x mvnw'
                     sh './mvnw clean package -DskipTests'
                 }
@@ -63,4 +54,3 @@ pipeline {
         }
     }
 }
-
