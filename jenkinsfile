@@ -17,7 +17,7 @@ pipeline {
         // --- PRODUCT SERVICE ---
         stage('Build & Push Product Service') {
             steps {
-                dir('product-service') {
+                dir('products') {
                     sh 'chmod +x mvnw'
                     sh './mvnw clean package -DskipTests'
                     // Docker Image Banana
@@ -32,7 +32,7 @@ pipeline {
         // --- ORDER SERVICE ---
         stage('Build & Push Order Service') {
             steps {
-                dir('order-service') {
+                dir('orders') {
                     sh 'chmod +x mvnw'
                     sh './mvnw clean package -DskipTests'
                     sh "docker build -t ${DOCKER_HUB_USERNAME}/orders:latest ."
